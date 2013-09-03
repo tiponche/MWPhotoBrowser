@@ -8,6 +8,7 @@
 
 #import "MWPhoto.h"
 #import "MWPhotoBrowser.h"
+_underlyingImage
 
 // Private
 @interface MWPhoto () {
@@ -15,6 +16,7 @@
     // Image Sources
     NSString *_photoPath;
     NSURL *_photoURL;
+    NSURL *_assetURL;
 
     // Image
     UIImage *_underlyingImage;
@@ -55,6 +57,10 @@ caption = _caption;
 	return [[[MWPhoto alloc] initWithURL:url] autorelease];
 }
 
++ (MWPhoto *)photoWithAssetURL:(NSURL *)url {
+    return [[[MWPhoto alloc] initWithAssetURL:url] autorelease];
+}
+
 #pragma mark NSObject
 
 - (id)initWithImage:(UIImage *)image {
@@ -76,6 +82,13 @@ caption = _caption;
 		_photoURL = [url copy];
 	}
 	return self;
+}
+
+- (id)initWithAssetURL:(NSURL *)url {
+    if ((self = [super init])) {
+        _assetURL = [url copy];
+    }
+    return self;
 }
 
 - (void)dealloc {
@@ -107,7 +120,10 @@ caption = _caption;
             // Load async from web (using SDWebImage)
             SDWebImageManager *manager = [SDWebImageManager sharedManager];
             [manager downloadWithURL:_photoURL delegate:self];
-        } else {
+        } else if (_assetURL) {
+        // Load async from asset library
+          [self performSelectorInBackground:@selector(loadImageFromAssetAsync) withObject:nil];
+        }else {
             // Failed - no source
             self.underlyingImage = nil;
             [self imageLoadingComplete];
@@ -145,6 +161,33 @@ caption = _caption;
         [pool drain];
     }
 }
+
+// Called in background
+// Load image in background from asset library
+- (void)loadImageFromAssetAsync {
+  NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+  @try {
+    ALAssetsLibrary* assetslibrary = [[[ALAssetsLibrary alloc] init] autorelease];
+    [assetslibrary assetForURL:_assetURL 
+      resultBlock:^(ALAsset *asset){
+        ALAssetRepresentation *rep = [asset defaultRepresentation];
+        CGImageRef iref = [rep fullScreenImage];
+        if (iref) {
+          self.underlyingImage = [UIImage imageWithCGImage:iref];
+        }
+        [self performSelectorOnMainThread:@selector(imageLoadingComplete) withObject:nil waitUntilDone:NO];
+      }
+      failureBlock:^(NSError *error) {
+        self.underlyingImage = nil;
+        MWLog(@"Photo from file error: %@",error);
+        [self performSelectorOnMainThread:@selector(imageLoadingComplete) withObject:nil waitUntilDone:NO];
+      }];
+  } @catch (NSException *exception) {
+  } @finally {
+    [pool drain];
+  }
+}
+
 
 // Called on main
 - (void)imageDidFinishLoadingSoDecompress {
