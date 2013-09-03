@@ -8,7 +8,7 @@
 
 #import "MWPhoto.h"
 #import "MWPhotoBrowser.h"
-_underlyingImage
+#import <AssetsLibrary/AssetsLibrary.h>
 
 // Private
 @interface MWPhoto () {
