@@ -109,6 +109,8 @@
 - (void)setControlsHidden:(BOOL)hidden animated:(BOOL)animated permanent:(BOOL)permanent;
 - (void)toggleControls;
 - (BOOL)areControlsHidden;
+- (void)updateToolbarItems;
+- (void)updateLayout;
 
 // Data
 - (NSUInteger)numberOfPhotos;
@@ -267,32 +269,12 @@ navigationBarBackgroundImageLandscapePhone = _navigationBarBackgroundImageLandsc
     _performingLayout = YES;
     NSUInteger numberOfPhotos = [self numberOfPhotos];
     
-	// Setup pages
-    [_visiblePages removeAllObjects];
-    [_recycledPages removeAllObjects];
-    
     // Toolbar
-    if (numberOfPhotos > 1 || _displayActionButton) {
-        [self.view addSubview:_toolbar];
-    } else {
-        [_toolbar removeFromSuperview];
-    }
-    
-    // Toolbar items & navigation
-    UIBarButtonItem *fixedLeftSpace = [[[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFixedSpace target:self action:nil] autorelease];
-    fixedLeftSpace.width = 32; // To balance action button
-    UIBarButtonItem *flexSpace = [[[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:self action:nil] autorelease];
-    NSMutableArray *items = [[NSMutableArray alloc] init];
-    if (_displayActionButton) [items addObject:fixedLeftSpace];
-    [items addObject:flexSpace];
-    if (numberOfPhotos > 1) [items addObject:_previousButton];
-    [items addObject:flexSpace];
-    if (numberOfPhotos > 1) [items addObject:_nextButton];
-    [items addObject:flexSpace];
-    if (_displayActionButton) [items addObject:_actionButton];
-    [_toolbar setItems:items];
-    [items release];
-	[self updateNavigation];
+    [self.view addSubview:_toolbar];
+
+    [self performSelector:@selector(updateToolbarItems)];
+    [self performSelector:@selector(updateLayout)];
+    [self updateNavigation];
     
     // Navigation buttons
     if ([self.navigationController.viewControllers objectAtIndex:0] == self) {
@@ -856,20 +838,20 @@ navigationBarBackgroundImageLandscapePhone = _navigationBarBackgroundImageLandsc
 
 #pragma mark - Navigation
 
-- (void)updateNavigation {
+// - (void)updateNavigation {
     
-	// Title
-	if ([self numberOfPhotos] > 1) {
-		self.title = [NSString stringWithFormat:@"%i %@ %i", _currentPageIndex+1, NSLocalizedString(@"of", @"Used in the context: 'Showing 1 of 3 items'"), [self numberOfPhotos]];		
-	} else {
-		self.title = nil;
-	}
+// 	// Title
+// 	if ([self numberOfPhotos] > 1) {
+// 		self.title = [NSString stringWithFormat:@"%i %@ %i", _currentPageIndex+1, NSLocalizedString(@"of", @"Used in the context: 'Showing 1 of 3 items'"), [self numberOfPhotos]];		
+// 	} else {
+// 		self.title = nil;
+// 	}
 	
-	// Buttons
-	_previousButton.enabled = (_currentPageIndex > 0);
-	_nextButton.enabled = (_currentPageIndex < [self numberOfPhotos]-1);
+// 	// Buttons
+// 	_previousButton.enabled = (_currentPageIndex > 0);
+// 	_nextButton.enabled = (_currentPageIndex < [self numberOfPhotos]-1);
 	
-}
+// }
 
 - (void)jumpToPageAtIndex:(NSUInteger)index {
 	
