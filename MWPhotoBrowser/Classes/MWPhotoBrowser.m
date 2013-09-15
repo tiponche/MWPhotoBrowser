@@ -69,6 +69,9 @@
 @property (nonatomic, retain) UIImage *navigationBarBackgroundImageDefault, *navigationBarBackgroundImageLandscapePhone;
 @property (nonatomic, retain) UIActionSheet *actionsSheet;
 @property (nonatomic, retain) MBProgressHUD *progressHUD;
+@property (nonatomic, retain) id <MWPhotoBrowserDelegate> delegate;
+@property (nonatomic, assign) NSUInteger currentPageIndex;
+@property (nonatomic, retain) UIToolbar* toolbar;
 
 // Private Methods
 
@@ -141,6 +144,9 @@ navigationBarBackgroundImageLandscapePhone = _navigationBarBackgroundImageLandsc
 @synthesize displayActionButton = _displayActionButton, actionsSheet = _actionsSheet;
 @synthesize progressHUD = _progressHUD;
 @synthesize previousViewControllerBackButton = _previousViewControllerBackButton;
+@synthesize delegate = _delegate;
+@synthesize currentPageIndex = _currentPageIndex;
+@synthesize toolbar = _toolbar;
 
 #pragma mark - NSObject
 
